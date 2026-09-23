@@ -1,6 +1,8 @@
+#include "lua/runtime.h"
 #include <lauxlib.h>
-#include <lualib.h>
+#include <lua.h>
 #include <monoclar.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -20,21 +22,30 @@ monoclar_ctx_t *monoclar_create(void) {
     return NULL;
   }
 
-  ctx->lua = luaL_newstate();
+  ctx->lua = monoclar_lua_create(ctx->screen);
   if (!ctx->lua) {
     // destroy screen make later
     free(ctx);
     return NULL;
   }
-  luaL_openlibs(ctx->lua);
-
   ctx->running = true;
 
   return ctx;
 }
 
-
 void monoclar_run(monoclar_ctx_t *ctx) {
+
+  // test
+  //
+  //
+
+  const char *code = " local lvgl = require(\"lvgl\")\n\n  monoclar.screen.root:Label {\n      text = \"Hello from Lua\",\n      align = lvgl.ALIGN.CENTER,\n  }";
+  if (luaL_dostring(ctx->lua, code) != LUA_OK) {
+    const char *message = lua_tostring(ctx->lua, -1);
+    fprintf(stderr, "Lua: %s\n", message ? message : "Unknown error");
+    lua_pop(ctx->lua, 1);
+  }
+
   while (ctx->running) {
     uint32_t ms = lv_timer_handler();
     if (ms == LV_NO_TIMER_READY) {

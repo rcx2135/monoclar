@@ -7,6 +7,7 @@
 
 #include <lauxlib.h>
 #include <lvgl.h>
+#include "src/misc/lv_array.h"
 
 #include "rotable.h"
 

@@ -1,8 +1,10 @@
 add_executable(${PROJECT_NAME}
   main.c
   monoclar/monoclar.c
+
   monoclar/display.c
   monoclar/ui/screen.c
+   monoclar/lua/runtime.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -17,4 +19,4 @@ else()
   message(FATAL_ERROR "Unsupported display backend: ${MONOCLAR_DISPLAY}")
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE lvgl lua)
+target_link_libraries(${PROJECT_NAME} PRIVATE lvgl lua luavgl)

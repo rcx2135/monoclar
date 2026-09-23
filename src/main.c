@@ -9,7 +9,7 @@ int main() {
     return 1;
   }
 
-  
+  monoclar_run(ctx);
 
   return 0;
 }
