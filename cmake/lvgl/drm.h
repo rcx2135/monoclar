@@ -1,0 +1,5 @@
+
+#define LV_USE_LINUX_DRM 1
+#define LV_COLOR_FORMAT_DEFAULT LV_COLOR_FORMAT_XRGB8888
+
+#include "common.h"

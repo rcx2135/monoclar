@@ -12,8 +12,8 @@ set(lua_sources
 
 list(TRANSFORM lua_sources PREPEND "${lua_source_dir}/")
 
-add_library(lua ${lua_sources})
+add_library(lua STATIC ${lua_sources})
 
-
+target_include_directories(lua PUBLIC "${lua_source_dir}")
 target_compile_definitions(lua PRIVATE LUA_USE_LINUX)
-target_link_libraries(lua PRIVATE ${CMAKE_DL_LIBS})
+target_link_libraries(lua PRIVATE m ${CMAKE_DL_LIBS})
