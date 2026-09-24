@@ -1,6 +1,12 @@
 #include "luavgl.h"
 #include "private.h"
 
+
+#include <errno.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define FONT_DEFAULT_SIZE 12
 
 #define _ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
@@ -321,4 +327,117 @@ static int luavgl_font_create(lua_State *L)
   }
 
   return luaL_error(L, "cannot create font");
+}
+
+
+struct luavgl_font_entry {
+    char *path;
+    uint32_t size;
+    lv_font_t *font;
+};
+
+static int luavgl_font_from_file(lua_State *L)
+{
+#if LV_USE_FREETYPE
+    size_t length;
+    const char *path = luaL_checklstring(L, 1, &length);
+    lua_Integer size = luaL_checkinteger(L, 2);
+
+    luaL_argcheck(L, length > 0, 1, "path must not be empty");
+    luaL_argcheck(
+        L, strlen(path) == length, 1,
+        "path must not contain a null byte"
+    );
+    luaL_argcheck(
+        L, size > 0 && size <= INT32_MAX, 2,
+        "size must be a positive 32-bit integer"
+    );
+
+    luavgl_ctx_t *ctx = luavgl_context(L);
+    if (ctx->closing) {
+        return luaL_error(L, "font runtime is closing");
+    }
+
+    char *resolved = realpath(path, NULL);
+    if (!resolved) {
+        return luaL_error(
+            L, "cannot resolve font '%s': %s",
+            path, strerror(errno)
+        );
+    }
+
+    for (size_t i = 0; i < ctx->font_count; i++) {
+        luavgl_font_entry_t *entry = &ctx->fonts[i];
+
+        if (entry->size == (uint32_t)size &&
+            strcmp(entry->path, resolved) == 0) {
+            free(resolved);
+            lua_pushlightuserdata(L, entry->font);
+            return 1;
+        }
+    }
+
+    if (ctx->font_count == ctx->font_capacity) {
+        size_t capacity =
+            ctx->font_capacity ? ctx->font_capacity * 2 : 8;
+
+        if (capacity < ctx->font_capacity ||
+            capacity > SIZE_MAX / sizeof(*ctx->fonts)) {
+            free(resolved);
+            return luaL_error(L, "font cache is too large");
+        }
+
+        luavgl_font_entry_t *entries =
+            realloc(ctx->fonts, capacity * sizeof(*entries));
+
+        if (!entries) {
+            free(resolved);
+            return luaL_error(L, "cannot allocate font cache");
+        }
+
+        ctx->fonts = entries;
+        ctx->font_capacity = capacity;
+    }
+
+    lv_font_t *font = lv_freetype_font_create(
+        resolved,
+        LV_FREETYPE_FONT_RENDER_MODE_BITMAP,
+        (uint32_t)size,
+        LV_FREETYPE_FONT_STYLE_NORMAL
+    );
+
+    if (!font) {
+        free(resolved);
+        return luaL_error(
+            L, "cannot load font '%s' at size %d",
+            path, (int)size
+        );
+    }
+
+    ctx->fonts[ctx->font_count++] = (luavgl_font_entry_t) {
+        .path = resolved,
+        .size = (uint32_t)size,
+        .font = font,
+    };
+
+    lua_pushlightuserdata(L, font);
+    return 1;
+#else
+    return luaL_error(L, "FontFromFile requires LV_USE_FREETYPE");
+#endif
+}
+
+static void luavgl_fonts_destroy(luavgl_ctx_t *ctx)
+{
+#if LV_USE_FREETYPE
+    for (size_t i = 0; i < ctx->font_count; i++) {
+        lv_freetype_font_delete(ctx->fonts[i].font);
+        free(ctx->fonts[i].path);
+    }
+#endif
+
+    free(ctx->fonts);
+    ctx->fonts = NULL;
+    ctx->font_count = 0;
+    ctx->font_capacity = 0;
 }

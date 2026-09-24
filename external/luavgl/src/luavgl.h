@@ -5,9 +5,9 @@
 #include "compat-5.3.h"
 #endif
 
+#include "src/misc/lv_array.h"
 #include <lauxlib.h>
 #include <lvgl.h>
-#include "src/misc/lv_array.h"
 
 #include "rotable.h"
 
@@ -20,11 +20,18 @@ typedef const lv_font_t *(*make_font_cb)(const char *name, int size,
 typedef void (*delete_font_cb)(const lv_font_t *);
 typedef int (*luavgl_pcall_t)(lua_State *L, int nargs, int nresults);
 
+typedef struct luavgl_font_entry luavgl_font_entry_t;
+
 typedef struct {
   lv_obj_t *root;
   make_font_cb make_font;
   delete_font_cb delete_font;
   luavgl_pcall_t pcall;
+
+  luavgl_font_entry_t *fonts;
+  size_t font_count;
+  size_t font_capacity;
+  bool closing;
 } luavgl_ctx_t;
 
 typedef enum {
@@ -153,10 +160,10 @@ LUALIB_API int luavgl_createmetatable(lua_State *L, const void *key,
                                       const char *name);
 
 /**
-  * @brief Get metatable using lightuserdata as key.
-  * @param L
-  * @param key lightuserdata key
-  * @return 1
+ * @brief Get metatable using lightuserdata as key.
+ * @param L
+ * @param key lightuserdata key
+ * @return 1
  */
 LUALIB_API int luavgl_getmetatable(lua_State *L, const void *key);
 

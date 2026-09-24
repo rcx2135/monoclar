@@ -5,6 +5,7 @@ add_executable(${PROJECT_NAME}
   monoclar/display.c
   monoclar/ui/screen.c
    monoclar/lua/runtime.c
+   monoclar/lua/ui.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

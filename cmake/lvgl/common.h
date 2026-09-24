@@ -189,7 +189,7 @@
 
 #if LV_USE_OS != LV_OS_NONE
 /** If FreeType or ThorVG is enabled, it is recommended to set it to 32KB or more. */
-#define LV_DRAW_THREAD_STACK_SIZE 8192
+  #define LV_DRAW_THREAD_STACK_SIZE (32 * 1024)
 
 /** Thread priority controls the relative importance of the drawing threads.
  *  Values correspond to lv_thread_prio_t enum in lv_os.h:
@@ -842,7 +842,7 @@
 
 #if LV_USE_THEME_DEFAULT
 /** Dark mode */
-#define LV_THEME_DEFAULT_DARK 0
+#define LV_THEME_DEFAULT_DARK 1
 
 /** Grow on press */
 #define LV_THEME_DEFAULT_GROW 1
@@ -1167,7 +1167,7 @@
 #define LV_USE_IMGFONT 0
 
 /** FreeType */
-#define LV_USE_FREETYPE 0
+#define LV_USE_FREETYPE 1
 
 #if LV_USE_FREETYPE
 /** When enabled, FreeType will use LVGL's memory allocator and file system
