@@ -8,10 +8,13 @@ local tab = tabs.create {
 tabs.register(tab)
 tabs.set_active(tab)
 
+local font = lvgl.FontFromFile("/usr/share/fonts/noto/NotoSans-Regular.ttf", 50)
+
 local count_label = tab.root:Label {
     text = "Hello",
     text_color = "#FFFFFF",
     align = lvgl.ALIGN.CENTER,
+    text_font = font,
 }
 
 

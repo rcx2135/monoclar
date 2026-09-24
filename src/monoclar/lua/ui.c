@@ -9,6 +9,9 @@ void monoclar_lua_bind_ui(lua_State *L, monoclar_screen_t *screen) {
   luaL_requiref(L, "lvgl", luaopen_lvgl, 0);
   lua_pop(L, 1);
 
+  lv_obj_set_style_bg_color(root, lv_color_black(), 0);
+  lv_obj_set_style_bg_opa(root, LV_OPA_COVER, 0);
+
   lua_pushlightuserdata(L, screen);
   lua_rawsetp(L, LUA_REGISTRYINDEX, &screen_key);
 
