@@ -10,6 +10,7 @@ int main() {
   }
 
   monoclar_run(ctx);
+  monoclar_destroy(ctx);
 
   return 0;
 }

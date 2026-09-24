@@ -4,8 +4,11 @@ add_executable(${PROJECT_NAME}
 
   monoclar/display.c
   monoclar/ui/screen.c
-   monoclar/lua/runtime.c
-   monoclar/lua/ui.c
+  monoclar/ui/tabs.c
+  monoclar/ui/tab_manager.c
+  monoclar/lua/runtime.c
+  monoclar/lua/ui.c
+  monoclar/lua/tabs.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

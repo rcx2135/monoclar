@@ -23,15 +23,36 @@ monoclar_ctx_t *monoclar_create(void) {
     return NULL;
   }
 
-  ctx->lua = monoclar_lua_create(ctx->screen);
+  ctx->tabs = monoclar_tab_manager_create(monoclar_screen_get_content(ctx->screen));
+  if (!ctx->tabs) {
+    monoclar_screen_destroy(ctx->screen);
+    free(ctx);
+    return NULL;
+  }
+
+  ctx->lua = monoclar_lua_create(ctx->tabs, ctx->screen);
 
   if (!ctx->lua) {
-    // destroy screen make later
+    monoclar_tab_manager_destroy(ctx->tabs);
+    monoclar_screen_destroy(ctx->screen);
     free(ctx);
     return NULL;
   }
 
   return ctx;
+}
+
+void monoclar_destroy(monoclar_ctx_t *ctx) {
+  if (!ctx) {
+    return;
+  }
+
+  ctx->running = false;
+
+  // monoclar_lua_destroy(ctx->lua);
+  monoclar_tab_manager_destroy(ctx->tabs);
+  monoclar_screen_destroy(ctx->screen);
+  free(ctx);
 }
 
 void monoclar_run(monoclar_ctx_t *ctx) {
@@ -66,30 +87,6 @@ void monoclar_run(monoclar_ctx_t *ctx) {
 }
 
 
-bool monoclar_register_tab(monoclar_ctx_t *ctx, monoclar_tab_t *tab) {
-    if (ctx->tab_count >= ctx->tab_capacity) {
-        size_t new_capacity = ctx->tab_capacity == 0 ? 4 : ctx->tab_capacity * 2;
-        monoclar_tab_t **new_tabs = realloc(ctx->tabs, new_capacity * sizeof(monoclar_tab_t *));
-        if (!new_tabs) {
-            return false;
-        }
-        ctx->tabs = new_tabs;
-        ctx->tab_capacity = new_capacity;
-    }
-
-    ctx->tabs[ctx->tab_count++] = tab;
-
-    return true;
-}
-bool monoclar_unregister_tab(monoclar_ctx_t *ctx, monoclar_tab_t *tab) {
-return false;
-}
-
-bool monoclar_set_active_tab(monoclar_ctx_t *ctx, monoclar_tab_t *tab) {
-    ctx->active_tab = tab;
-    return true;
-}
-
-monoclar_tab_t *monoclar_get_active_tab(const monoclar_ctx_t *ctx) {
-    return ctx->active_tab;
+monoclar_tab_manager_t *monoclar_get_tab_manager(const monoclar_ctx_t *ctx) {
+    return ctx->tabs;
 }
