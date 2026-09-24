@@ -47,6 +47,18 @@ bool monoclar_tab_manager_register(monoclar_tab_manager_t *manager,
   }
   manager->tabs[manager->count++] = tab;
   tab->owner = manager;
+
+  tab->root = lv_obj_create(manager->parent);
+  if (!tab->root) {
+    return false;
+  }
+
+  lv_obj_remove_style_all(tab->root);
+  lv_obj_set_size(tab->root, LV_PCT(100), LV_PCT(100));
+  lv_obj_set_pos(tab->root, 0, 0);
+  lv_obj_set_scrollable(tab->root, false);
+  lv_obj_set_hidden(tab->root, true);
+
   return true;
 }
 
@@ -57,11 +69,32 @@ bool monoclar_tab_manager_unregister(monoclar_tab_manager_t *manager,
 }
 
 bool monoclar_tab_manager_set_active(monoclar_tab_manager_t *manager,
-                                     monoclar_tab_t *tab)
-{
-  manager->active = tab;
-  return true;
-}
+                                       monoclar_tab_t *tab)
+  {
+    if (!manager) {
+      return false;
+    }
+
+    if (tab && (tab->owner != manager || !tab->root)) {
+      return false;
+    }
+
+    if (manager->active == tab) {
+      return true;
+    }
+
+    if (manager->active && manager->active->root) {
+      lv_obj_set_hidden(manager->active->root, true);
+    }
+
+    manager->active = tab;
+
+    if (tab) {
+      lv_obj_set_hidden(tab->root, false);
+    }
+
+    return true;
+  }
 
 monoclar_tab_t *monoclar_tab_manager_get_active(
     const monoclar_tab_manager_t *manager)

@@ -63,13 +63,7 @@ void monoclar_run(monoclar_ctx_t *ctx) {
   //
 
   const char *code =
-      "local lvgl = require(\"lvgl\")"
-      "local screen = require(\"monoclar.screen\")"
-      "local font = "
-      "lvgl.FontFromFile(\"/home/nophono/coding/monoclar/tools/fonts/"
-      "Space_Mono/SpaceMono-Regular.ttf\", 27)"
-      "screen.root:Label({text = \"Hello from Lua\", text_font=font, align = "
-      "lvgl.ALIGN.CENTER})";
+      "local lvgl = require(\"lvgl\")\n  local screen = require(\"monoclar.screen\")\n\n  local overlay = screen.root:Object {\n      w = 300,\n      h = 80,\n      align = lvgl.ALIGN.BOTTOM_MID,\n      flex_flow = lvgl.FLEX_FLOW.ROW,\n      scroll_dir = lvgl.DIR.HOR,\n      scrollbar_mode = lvgl.SCROLLBAR_MODE.OFF,\n      pad_all = 0,\n      pad_column = 8,\n  }\n\n  for i = 0, 9 do\n      local item = overlay:Button {\n          w = 70,\n          h = 60,\n      }\n\n      item:Label {\n          text = string.format(\"Item %d\", i),\n          align = lvgl.ALIGN.CENTER,\n      }\n  end";
 
   if (luaL_dostring(ctx->lua, code) != LUA_OK) {
     const char *message = lua_tostring(ctx->lua, -1);
