@@ -1,4 +1,5 @@
 #include "lua/runtime.h"
+#include "plugin/plugin_manager.h"
 #include "ui/screen.h"
 #include <lauxlib.h>
 #include <lua.h>
@@ -12,7 +13,7 @@
 monoclar_ctx_t *monoclar_create(void) {
   lv_init();
 
-  monoclar_ctx_t *ctx = malloc(sizeof(monoclar_ctx_t));
+  monoclar_ctx_t *ctx = calloc(1, sizeof(monoclar_ctx_t));
   if (!ctx) {
     return NULL;
   }
@@ -23,8 +24,17 @@ monoclar_ctx_t *monoclar_create(void) {
     return NULL;
   }
 
-  ctx->tabs = monoclar_tab_manager_create(monoclar_screen_get_content(ctx->screen));
+  ctx->tabs =
+      monoclar_tab_manager_create(monoclar_screen_get_content(ctx->screen));
   if (!ctx->tabs) {
+    monoclar_screen_destroy(ctx->screen);
+    free(ctx);
+    return NULL;
+  }
+
+  ctx->plugins = monoclar_plugin_manager_create();
+  if (!ctx->plugins) {
+    monoclar_tab_manager_destroy(ctx->tabs);
     monoclar_screen_destroy(ctx->screen);
     free(ctx);
     return NULL;
@@ -58,17 +68,14 @@ void monoclar_destroy(monoclar_ctx_t *ctx) {
 void monoclar_run(monoclar_ctx_t *ctx) {
   ctx->running = true;
 
-  // test
-  //
-  //
 
-  const char *code =
-      "local lvgl = require(\"lvgl\")\n  local screen = require(\"monoclar.screen\")\n\n  local overlay = screen.root:Object {\n      w = 300,\n      h = 80,\n      align = lvgl.ALIGN.BOTTOM_MID,\n      flex_flow = lvgl.FLEX_FLOW.ROW,\n      scroll_dir = lvgl.DIR.HOR,\n      scrollbar_mode = lvgl.SCROLLBAR_MODE.OFF,\n      pad_all = 0,\n      pad_column = 8,\n  }\n\n  for i = 0, 9 do\n      local item = overlay:Button {\n          w = 70,\n          h = 60,\n      }\n\n      item:Label {\n          text = string.format(\"Item %d\", i),\n          align = lvgl.ALIGN.CENTER,\n      }\n  end";
+  monoclar_plugin_manager_scan_directory(ctx->plugins, "plugins");
 
-  if (luaL_dostring(ctx->lua, code) != LUA_OK) {
-    const char *message = lua_tostring(ctx->lua, -1);
-    fprintf(stderr, "Lua: %s\n", message ? message : "Unknown error");
-    lua_pop(ctx->lua, 1);
+  for (size_t i = 0; i < monoclar_plugin_manager_get_count(ctx->plugins); i++) {
+    monoclar_plugin_t *plugin =
+        monoclar_plugin_manager_get_at(ctx->plugins, i);
+
+    monoclar_lua_load_plugin(ctx->lua, plugin);
   }
 
   while (ctx->running) {
@@ -80,7 +87,6 @@ void monoclar_run(monoclar_ctx_t *ctx) {
   }
 }
 
-
 monoclar_tab_manager_t *monoclar_get_tab_manager(const monoclar_ctx_t *ctx) {
-    return ctx->tabs;
+  return ctx->tabs;
 }

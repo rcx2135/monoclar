@@ -2,8 +2,8 @@
 
 #include <lvgl.h>
 #include <lvgl/lv_types.h>
+#include <ui/tab.h>
 #include <ui/tab_manager.h>
-#include <ui/tabs.h>
 
 struct monoclar_tab {
   char *id;

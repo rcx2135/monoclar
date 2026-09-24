@@ -1,5 +1,5 @@
 #include "tabs.h"
-#include "../ui/tabs_private.h"
+#include "../ui/tab_private.h"
 
 #include <lauxlib.h>
 #include <luavgl.h>

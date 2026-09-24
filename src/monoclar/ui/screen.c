@@ -13,7 +13,7 @@ static void screen_layout(lv_event_t *event)
 }
 
 monoclar_screen_t *monoclar_screen_create(void) {
-  monoclar_screen_t *screen = malloc(sizeof(monoclar_screen_t));
+  monoclar_screen_t *screen = calloc(1, sizeof(monoclar_screen_t));
   if (!screen) {
     return NULL;
   }

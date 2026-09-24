@@ -1,4 +1,4 @@
-#include "tabs_private.h"
+#include "tab_private.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +9,7 @@ monoclar_tab_t *monoclar_tab_create(const char *id, const char *name)
     return NULL;
   }
 
-  monoclar_tab_t *tab = malloc(sizeof(monoclar_tab_t));
+  monoclar_tab_t *tab = calloc(1, sizeof(monoclar_tab_t));
   if (!tab) {
     return NULL;
   }

@@ -1,5 +1,5 @@
 #include "tab_manager_private.h"
-#include "tabs_private.h"
+#include "tab_private.h"
 
 #include <stdlib.h>
 
